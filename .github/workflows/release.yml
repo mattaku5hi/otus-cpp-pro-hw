@@ -22,7 +22,7 @@ jobs:
         run: sudo apt-get install -y build-essential cmake libboost-test-dev
 
       - name: Configure CMake
-        run: cmake . -DPATCH_VERSION=${{ github.run_number }} -DENABLE_BOOST_TEST=ON -DENABLE_GOOGLE_TEST=ON
+        run: cmake -B build -S . -DPATCH_VERSION=${{ github.run_number }} -DENABLE_BOOST_TEST=ON -DENABLE_GOOGLE_TEST=ON
       
       - name: Build project
         run: cmake --build build -j$(nproc)
