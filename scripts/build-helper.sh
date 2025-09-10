@@ -234,85 +234,7 @@ configure_cmake() {
     cmake "${cmake_args[@]}" -B "$build_dir"
 }
 
-# Расширенная функция (для build-dev.sh)
-configure_cmake_extended() {
-    local target=$1
-    local build_dir=$2
-    local build_type=${3:-"Release"}
-    local astra_mode=${4:-"false"}
-    local enable_sanitizers=${5:-"false"}
-    local sanitizer_types=${6:-"address"}
-    
-    local cmake_args=(
-        "-DCMAKE_BUILD_TYPE=$build_type"
-    )
-    
-    if [[ "$astra_mode" == "true" ]]; then
-        cmake_args+=("-DBUILD_FOR_ASTRA=ON")
-    fi
-
-    if [[ "$astra_mode" == "true" ]]; then
-        cmake_args+=("-DCMAKE_INSTALL_PREFIX=/opt/di/diprint/")
-    else
-        cmake_args+=("-DCMAKE_INSTALL_PREFIX=/opt/printer")
-    fi
-    
-    # Добавляем конфигурацию санитайзеров
-    if [[ "$enable_sanitizers" == "true" ]]; then
-        cmake_args+=("-DENABLE_SANITIZERS=ON")
-        local cmake_sanitizers=$(echo "$sanitizer_types" | tr ',' ';')
-        cmake_args+=("-DSANITIZER_TYPES=$cmake_sanitizers")
-        if [[ "$build_type" != "Release" ]]; then
-            print_warning "Использование санитайзеров с $build_type сборкой. Рекомендуется использовать --release для оптимальных результатов."
-        fi
-        print_info "Санитайзеры включены: $sanitizer_types (только исполняемый файл)"
-    fi
-    
-    case "$target" in
-        "static-lib")
-            cmake_args+=("-DBUILD_STATIC_LIB=ON" "-DBUILD_DYNAMIC_LIB=OFF" "-DBUILD_UTILITY=OFF" "-DBUILD_TESTS=OFF")
-            ;;
-        "dynamic-lib")
-            cmake_args+=("-DBUILD_STATIC_LIB=OFF" "-DBUILD_DYNAMIC_LIB=ON" "-DBUILD_UTILITY=OFF" "-DBUILD_TESTS=OFF")
-            ;;
-        "executable")
-            cmake_args+=("-DBUILD_STATIC_LIB=OFF" "-DBUILD_DYNAMIC_LIB=OFF" "-DBUILD_UTILITY=ON" "-DBUILD_TESTS=OFF")
-            ;;
-        "tests")
-            cmake_args+=("-DBUILD_STATIC_LIB=ON" "-DBUILD_DYNAMIC_LIB=OFF" "-DBUILD_UTILITY=OFF" "-DBUILD_TESTS=ON")
-            ;;
-        "package")
-            cmake_args+=("-DBUILD_STATIC_LIB=ON" "-DBUILD_DYNAMIC_LIB=ON" "-DBUILD_UTILITY=ON" "-DBUILD_TESTS=OFF" "-DBUILD_DEB_PACKAGE=ON")
-            ;;
-        "all")
-            cmake_args+=("-DBUILD_STATIC_LIB=ON" "-DBUILD_DYNAMIC_LIB=ON" "-DBUILD_UTILITY=ON" "-DBUILD_TESTS=ON" "-DBUILD_DEB_PACKAGE=ON")
-            ;;
-    esac
-
-    # If Astra mode, force -DBUILD_TESTS=OFF and remove any -DBUILD_TESTS=ON
-    if [[ "$astra_mode" == "true" ]]; then
-        # Remove any -DBUILD_TESTS=ON
-        for i in "${!cmake_args[@]}"; do
-            if [[ "${cmake_args[$i]}" == "-DBUILD_TESTS=ON" ]]; then
-                unset 'cmake_args[$i]'
-            fi
-        done
-        # Add -DBUILD_TESTS=OFF if not already present
-        local found_tests_off=false
-        for arg in "${cmake_args[@]}"; do
-            if [[ "$arg" == "-DBUILD_TESTS=OFF" ]]; then
-                found_tests_off=true
-                break
-            fi
-        done
-        if [[ "$found_tests_off" == false ]]; then
-            cmake_args+=("-DBUILD_TESTS=OFF")
-        fi
-    fi
-    
-    print_info "Конфигурация CMake: ${cmake_args[*]}"
-    cmake "${cmake_args[@]}" -B "$build_dir"
-}
+# (extended CMake configuration removed)
 
 # =============================================================================
 # ФУНКЦИИ СБОРКИ
@@ -329,6 +251,9 @@ build_target_cmake() {
     
     # Сборка
     local build_args=("--build" "$build_dir" "-j$jobs")
+    if [[ -n "$target" && "$target" != "all" ]]; then
+        build_args+=("--target" "$target")
+    fi
     if [[ "$verbose" == "true" ]]; then
         build_args+=("--verbose")
     fi
@@ -351,13 +276,8 @@ clean_build_dir() {
 # Запуск тестов
 run_tests() {
     local build_dir=$1
-
     print_info "Запуск тестов..."
-    cd "$build_dir"
-    ctest --test-dir tests --output-on-failure
-    local status=$?
-    cd - > /dev/null
-    return $status
+    ctest --test-dir "$build_dir" --output-on-failure
 }
 
 # Создание пакета
@@ -456,43 +376,4 @@ init_build_helper() {
     # print_debug "Build helper functions loaded"
 }
 
-# Auto-initialize when sourced
 init_build_helper 
-
-
-#############################################
-# Decide if package creation is needed
-# Usage: is_package_creation_needed <cmake_args_array_name> <build_target_string>
-# Returns 0 (true) if packaging should be performed, 1 (false) otherwise
-is_package_creation_needed() {
-    # First arg is the NAME of an array variable that holds CMake arguments
-    # We use nameref to access it without copying
-    local -n __cmake_args_ref=$1
-    local __build_target="$2"
-
-    local __need=false
-
-    # 1) Explicit CMake switch controls packaging
-    for __arg in "${__cmake_args_ref[@]}"; do
-        case "$__arg" in
-            -DBUILD_DEB_PACKAGE=ON|-DBUILD_DEB_PACKAGE=TRUE|-DBUILD_DEB_PACKAGE=1)
-                __need=true
-                break
-                ;;
-        esac
-    done
-
-    # 2) Targets that imply packaging (convention in our scripts)
-    if [[ "$__need" == false ]]; then
-        if [[ "$__build_target" == *"package"* ]] || [[ "$__build_target" == *"all"* ]]; then
-            __need=true
-        fi
-    fi
-
-    # Return like a predicate: 0 means "yes, do it"
-    if [[ "$__need" == true ]]; then
-        return 0
-    else
-        return 1
-    fi
-}
