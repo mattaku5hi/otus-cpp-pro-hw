@@ -70,6 +70,7 @@ compile_commands.json
 
 # Project-specific files
 *.settings
+*.tsv
 *.png
 *.bin
 *.pbm
