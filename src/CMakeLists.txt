@@ -1,6 +1,6 @@
 
+set(PROJECT_LIB "ip_filter_core")
 set(PROJECT_NAME "ip_filter")
-set(PROJECT_LIB "${PROJECT_NAME}_lib")
 
 # Настройка версии
 configure_file(version.h.in version.h @ONLY)
@@ -16,6 +16,9 @@ set(SOURCES_EXE
 
 # Основная библиотека
 add_library(${PROJECT_LIB} ${SOURCES_LIB})
+# Provide a clean alias for consumers without colliding with the executable target name
+add_library(ipfilter::lib ALIAS ${PROJECT_LIB})
+set_target_properties(${PROJECT_LIB} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}")
 target_include_directories(${PROJECT_LIB}
     PRIVATE "${CMAKE_BINARY_DIR}"
     PRIVATE "${CMAKE_BINARY_DIR}/src"
@@ -28,6 +31,10 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE "${CMAKE_BINARY_DIR}/src"
 )
 
+# Alias-like convenience target for the executable
+# CMake does not support ALIAS for executables, so we create a phony target that depends on it
+add_custom_target(ipfilter_app DEPENDS ${PROJECT_NAME})
+
 # Установка стандартов
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD 17
@@ -35,7 +42,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 # Линковка
-target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_LIB})
+target_link_libraries(${PROJECT_NAME} PRIVATE ipfilter::lib)
 
 # Установка опций компилятора
 if (MSVC)

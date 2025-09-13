@@ -13,25 +13,25 @@
 #include <vector>
 
 
-namespace iptools 
+namespace ip_filter
 {
 
 using IPv4 = std::array<int, 4>; // alias
 
-inline std::vector<std::string> split(const std::string& str, char d) 
+inline std::vector<std::string> split(const std::string& str, char delimiter) 
 {
-    std::vector<std::string> r;
+    std::vector<std::string> result;
     std::string::size_type start = 0;
-    std::string::size_type stop = str.find_first_of(d);
+    std::string::size_type stop = str.find_first_of(delimiter);
     while(stop != std::string::npos) 
     {
-        r.push_back(str.substr(start, stop - start));
+        result.push_back(str.substr(start, stop - start));
         start = stop + 1;
-        stop = str.find_first_of(d, start);
+        stop = str.find_first_of(delimiter, start);
     }
-    r.push_back(str.substr(start));
+    result.push_back(str.substr(start));
     
-    return r;
+    return result;
 }
 
 // C++20 provides std::in_range; for C++17 we define a simple helper
@@ -41,10 +41,10 @@ constexpr bool isInRange(U value)
     return value >= std::numeric_limits<T>::min() && value <= std::numeric_limits<T>::max();
 }
 
-inline IPv4 ParseIPv4(const std::string& text) 
+inline IPv4 ParseIpv4(const std::string& text) 
 {
     const auto parts = split(text, '.');
-    if (parts.size() != 4) 
+    if(parts.size() != 4) 
     {
         throw std::runtime_error("Invalid IPv4: wrong parts count: " + text);
     }
@@ -77,7 +77,7 @@ inline IPv4 ParseIPv4(const std::string& text)
     return ip;
 }
 
-inline std::vector<IPv4> ReadInputIPs(std::istream& in) 
+inline std::vector<IPv4> ReadInputIps(std::istream& in) 
 {
     std::vector<IPv4> ips;
     std::string line;
@@ -93,35 +93,37 @@ inline std::vector<IPv4> ReadInputIPs(std::istream& in)
         {
             continue;
         }
-        ips.emplace_back(ParseIPv4(addr));
+        ips.emplace_back(ParseIpv4(addr));
     }
     return ips;
 }
 
-inline void SortIPsDesc(std::vector<IPv4>& ips) 
+inline void SortIpsDesc(std::vector<IPv4>& ips) 
 {
     std::sort(ips.begin(), ips.end(), std::greater<IPv4>());
 }
 
-inline void PrintIp(const IPv4& ip, std::ostream& out) 
+// Could be hidden as private
+inline void PrintIpImpl(const IPv4& ip, std::ostream& out) 
 {
     out << ip[0] << '.' << ip[1] << '.' << ip[2] << '.' << ip[3] << '\n';
 }
 
-inline void PrintIps(const IPv4& ip, std::ostream& out)
+// delegate
+inline void PrintIp(const IPv4& ip, std::ostream& out)
 {
-    PrintIp(ip, out);
+    PrintIpImpl(ip, out);
 }
 
 template <typename Container>
-inline void PrintIps(const Container& ips, std::ostream& out)
+inline void PrintIp(const Container& ips, std::ostream& out)
 {
     using Elem = std::remove_cv_t<typename Container::value_type>;
     static_assert(std::is_same<Elem, IPv4>::value,
-                  "PrintIps(Container): Container::value_type must be iptools::IPv4");
+                  "PrintIp(Container): Container::value_type must be iptools::IPv4");
     for (const auto& ip : ips)
     {
-        PrintIp(ip, out);
+        PrintIpImpl(ip, out);
     }
 }
 
@@ -155,4 +157,4 @@ inline std::vector<IPv4> FilterFourthStep(const std::vector<IPv4>& ips, int valu
     return out;
 }
 
-} // namespace iptools
+} // namespace ip_filter

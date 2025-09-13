@@ -3,7 +3,10 @@ set(PROJECT_NAME "boost_tests")
 
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 
-add_executable(${PROJECT_NAME} test_version.cpp)
+add_executable(${PROJECT_NAME}
+    test_version.cpp
+    test_ip_tools.cpp
+)
 
 # Установка стандартов
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -17,7 +20,7 @@ target_include_directories(
     PRIVATE
         "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(${PROJECT_NAME} ip_filter_lib)
+target_link_libraries(${PROJECT_NAME} ipfilter::lib)
 
 # Установка опций компилятора
 if (MSVC)
