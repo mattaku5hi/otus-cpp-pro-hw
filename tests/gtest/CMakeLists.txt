@@ -1,5 +1,3 @@
-
-
 set(PROJECT_NAME "gtest_tests")
 
 # Try the package first (system-installed or prebuilt)
@@ -30,30 +28,75 @@ if(NOT TARGET GTest::gtest OR NOT TARGET GTest::gtest_main)
     endif()
 endif()
 
+# Simple Map tests removed
 
-add_executable(${PROJECT_NAME} 
-	test_version.cpp
+# --- Arena Allocator tests ---
+add_executable(gtest_arena_allocator
+    test_arena_allocator.cpp
 )
-target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src")
+target_include_directories(gtest_arena_allocator PRIVATE "${CMAKE_SOURCE_DIR}/src")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE 
-	GTest::gtest 
-	GTest::gtest_main 
-	helloworld
+target_link_libraries(gtest_arena_allocator PRIVATE 
+    GTest::gtest 
+    GTest::gtest_main 
+    simple_allocator::lib
 )
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-	CXX_STANDARD 17
-	CXX_STANDARD_REQUIRED ON
+set_target_properties(gtest_arena_allocator PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
 )
 
 if(MSVC)
-	target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+    target_compile_options(gtest_arena_allocator PRIVATE /W4)
 else()
-	target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
+    target_compile_options(gtest_arena_allocator PRIVATE -Wall -Wextra -pedantic -Werror)
+endif()
+
+# --- Version tests (separate executable) ---
+add_executable(gtest_version
+    test_version.cpp
+)
+target_include_directories(gtest_version PRIVATE "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(gtest_version PRIVATE 
+    GTest::gtest 
+    GTest::gtest_main 
+    simple_allocator::lib
+)
+set_target_properties(gtest_version PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+)
+if(MSVC)
+    target_compile_options(gtest_version PRIVATE /W4)
+else()
+    target_compile_options(gtest_version PRIVATE -Wall -Wextra -pedantic -Werror)
 endif()
 
 # Do not install test executables
 
 enable_testing()
-add_test(NAME gtest COMMAND ${PROJECT_NAME})
+add_test(NAME gtest_arena_allocator COMMAND gtest_arena_allocator)
+add_test(NAME gtest_version COMMAND gtest_version)
+
+# --- Simple Vector tests ---
+add_executable(gtest_simple_vector
+    test_simple_vector.cpp
+)
+target_include_directories(gtest_simple_vector PRIVATE "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(gtest_simple_vector PRIVATE 
+    GTest::gtest 
+    GTest::gtest_main 
+    simple_allocator::lib
+)
+set_target_properties(gtest_simple_vector PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+)
+if(MSVC)
+    target_compile_options(gtest_simple_vector PRIVATE /W4)
+else()
+    target_compile_options(gtest_simple_vector PRIVATE -Wall -Wextra -pedantic -Werror)
+endif()
+
+add_test(NAME gtest_simple_vector COMMAND gtest_simple_vector)

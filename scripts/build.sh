@@ -19,6 +19,7 @@ INSTALL_DEPS=false
 CLEAN_BUILD=true
 VERBOSE=false
 JOBS=$(get_cpu_cores)
+BUILD_PACKAGE=true
 
 # Управление тестами (по умолчанию запускается GTest)
 ENABLE_BOOST="OFF"
@@ -108,6 +109,16 @@ build_target() {
         fi
     else
         print_info "Тесты отключены (--tests не указан или равен none)"
+    fi
+
+    # Создание DEB пакета, если запрошено
+    if [[ "$BUILD_PACKAGE" == "true" ]]; then
+        print_info "Сборка DEB пакета через CPack..."
+        if cmake --build "$build_dir" --target package; then
+            print_success "DEB пакет успешно собран (см. артефакты в $build_dir)"
+        else
+            print_error "Не удалось собрать DEB пакет"; exit 3
+        fi
     fi
 
     print_success "Сборка завершена"

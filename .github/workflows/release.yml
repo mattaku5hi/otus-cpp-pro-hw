@@ -3,8 +3,8 @@ name: 'C++ CI'
 on:
   push:
     branches:
-      - main
-      - feature/github_actions
+      - feature/3-allocator
+
     tags:
       - 'v*'
 
