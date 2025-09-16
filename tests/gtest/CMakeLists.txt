@@ -39,7 +39,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(${PROJECT_NAME} PRIVATE 
 	GTest::gtest 
 	GTest::gtest_main 
-	helloworld
+	helloworld::lib
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
