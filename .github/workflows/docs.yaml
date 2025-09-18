@@ -1,0 +1,35 @@
+# .github/workflows/docs.yaml
+name: Deploy Docs\
+
+# On every push and PR, not on releases only!
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Doxygen
+        run: sudo apt-get install -y doxygen
+
+      - name: Generate Doxygen HTML
+        run: |
+          doxygen Doxyfile
+          touch docs/html/.nojekyll  # if deploying to GitHub Pages
+
+        # Deploy the HTML documentation to GitHub Pages
+      - name: GH Pages Deployment
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./doc/html/
+          destination_dir: ./  # publishes to root of gh-pages
+          enable_jekyll: false
+          allow_empty_commit: false
+          force_orphan: true
+          publish_branch: gh-pages
