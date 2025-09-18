@@ -7,6 +7,9 @@ on:
       - feature/github_actions
     tags:
       - 'v*'
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:

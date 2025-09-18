@@ -4,9 +4,11 @@ name: Deploy Docs\
 # On every push and PR, not on releases only!
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 permissions:
   contents: write  # для push
