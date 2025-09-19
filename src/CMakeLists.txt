@@ -1,13 +1,13 @@
 
-set(PROJECT_NAME "helloworld")
-set(PROJECT_LIB "helloworld_core")
+set(PROJECT_NAME "print_ip")
+set(PROJECT_LIB "print_ip_core")
 
 # Настройка версии
 configure_file(version.h.in version.h @ONLY)
 
 # Основная библиотека
-add_library(${PROJECT_LIB} lib_version.cpp)
-add_library(helloworld::lib ALIAS ${PROJECT_LIB})
+add_library(${PROJECT_LIB} lib_version.cpp print_ip.h)
+add_library(print_ip::lib ALIAS ${PROJECT_LIB})
 set_target_properties(${PROJECT_LIB} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}")
 target_include_directories(${PROJECT_LIB}
     PRIVATE "${CMAKE_BINARY_DIR}"
@@ -16,7 +16,7 @@ target_include_directories(${PROJECT_LIB}
 )
 
 # Исполняемый файл
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME} print_ip_app.cpp)
 
 # Установка стандартов
 set_target_properties(${PROJECT_NAME} ${PROJECT_NAME} PROPERTIES
@@ -27,7 +27,7 @@ set_target_properties(${PROJECT_NAME} ${PROJECT_NAME} PROPERTIES
 add_custom_target(${PROJECT_NAME}_app DEPENDS ${PROJECT_NAME})
 
 # Линковка
-target_link_libraries(${PROJECT_NAME} PRIVATE helloworld::lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE print_ip::lib)
 
 # Установка опций компилятора
 if (MSVC)

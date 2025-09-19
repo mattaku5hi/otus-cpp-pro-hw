@@ -4,9 +4,13 @@ name: Deploy Docs\
 # On every push and PR, not on releases only!
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - feature/4-ipprint
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+      - feature/4-ipprint
 
 permissions:
   contents: write  # для push
