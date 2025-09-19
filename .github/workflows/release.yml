@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - main
-      - feature/github_actions
+      - feature/4-ipprint
     tags:
       - 'v*'
+  pull_request:
+    branches:
+      - main
+      - feature/4-ipprint
 
 jobs:
   build:
