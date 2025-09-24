@@ -6,9 +6,11 @@ on:
   push:
     branches:
       - main
+      - feature/5-editor
   pull_request:
     branches:
       - main
+      - feature/5-editor
 
 permissions:
   contents: write  # для push

@@ -17,7 +17,7 @@ target_include_directories(
     PRIVATE
         "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(${PROJECT_NAME} helloworld::lib)
+target_link_libraries(${PROJECT_NAME} editor::lib)
 
 # Установка опций компилятора
 if (MSVC)

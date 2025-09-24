@@ -31,15 +31,22 @@ if(NOT TARGET GTest::gtest OR NOT TARGET GTest::gtest_main)
 endif()
 
 
-add_executable(${PROJECT_NAME} 
-	test_version.cpp
+add_executable(${PROJECT_NAME}
+    test_version.cpp
+    test_editor.cpp
 )
-target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src")
+target_include_directories(${PROJECT_NAME} PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+    "${CMAKE_SOURCE_DIR}/src/ctrl"
+    "${CMAKE_SOURCE_DIR}/src/model"
+    "${CMAKE_SOURCE_DIR}/src/model/shapes"
+    "${CMAKE_SOURCE_DIR}/src/version"
+)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE 
 	GTest::gtest 
 	GTest::gtest_main 
-	helloworld::lib
+	editor::lib
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

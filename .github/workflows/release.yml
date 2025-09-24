@@ -4,12 +4,13 @@ on:
   push:
     branches:
       - main
-      - feature/github_actions
+      - feature/5-editor
     tags:
       - 'v*'
   pull_request:
     branches:
       - main
+      - feature/5-editor
 
 jobs:
   build:
@@ -60,6 +61,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/helloworld-0.0.${{ github.run_number }}-Linux.deb
-          asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb
+          asset_path: build/editor-0.0.${{ github.run_number }}-Linux.deb
+          asset_name: editor-0.0.${{ github.run_number }}-Linux.deb
           asset_content_type: application/vnd.debian.binary-package
