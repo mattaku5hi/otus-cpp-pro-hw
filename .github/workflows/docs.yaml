@@ -6,9 +6,11 @@ on:
   push:
     branches:
       - main
+      - feature/6-matrix
   pull_request:
     branches:
       - main
+      - feature/6-matrix
 
 permissions:
   contents: write  # для push

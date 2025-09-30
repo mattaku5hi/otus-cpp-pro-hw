@@ -4,12 +4,13 @@ on:
   push:
     branches:
       - main
-      - feature/github_actions
+      - feature/6-matrix
     tags:
       - 'v*'
   pull_request:
     branches:
       - main
+      - feature/6-matrix
 
 jobs:
   build:
