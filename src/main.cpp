@@ -14,7 +14,7 @@ static bool test_suite(void)
     std::cout << "===== Test suite =====\n"; 
     
     // 1) Матрица с пустым значением 0
-    Matrix<int, 0> matrix;
+    Matrix<int, 0, 2> matrix;
 
     // 2) Главная диагональ [0,0]..[9,9] значениями 0..9
     for(int i = 0; i < 10; ++i) 

@@ -6,21 +6,24 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <array>
 
 
-template <typename T, T defaultValue>
+template <typename T, T defaultValue, std::size_t Dim = 2>
 class Matrix
 {
 public:
     using value_type = T;
-    using coord_type = std::pair<int, int>;
+    static constexpr std::size_t dimension = Dim;
+    using index_type = std::array<int, Dim>;
+    using storage_type = std::map<index_type, T>;
 
-    // Forward declarations
-    // Proxy for the second indexing operator: matrix[x][y]
+    // Forward declarations for proxy-based indexing
     class CellProxy;
-    // Proxies representing matrix[x] indexing operator
-    class RowProxy;
-    class ConstRowProxy;
+    template <std::size_t Depth>
+    class IndexProxy;
+    template <std::size_t Depth>
+    class ConstIndexProxy;
 
     // Iterator that yields std::tuple<x, y, v(value)>
     class Iterator 
@@ -29,7 +32,7 @@ public:
         // create nested type alias
         // it's implementation-defined for std::map container
         // type depends on T parameter so typename is used
-        using underlying_iterator = typename std::map<coord_type, T>::const_iterator;
+        using underlying_iterator = typename storage_type::const_iterator;
         // here we define the iterator category (std::iterator_traits) for STL 
         // it's iterator (not container) property
         // std::iterator_traits reads nested typedefs from the iterator type 
@@ -37,8 +40,13 @@ public:
         using iterator_category = std::forward_iterator_tag;
         using iterator_concept = std::forward_iterator_tag; // for C++20
         using difference_type = std::ptrdiff_t;
-        using value_type = std::tuple<int, int, T>;
-        using reference = value_type;   // returning by value
+        using iter_value_type = std::conditional_t<
+            (Dim == 2),
+            std::tuple<int, int, T>,
+            std::pair<index_type, T>
+        >;
+        using value_type = iter_value_type;
+        using reference = iter_value_type;   // returning by value
         using pointer = void;           // not a pointer iterator
 
         Iterator() = default;
@@ -46,8 +54,15 @@ public:
 
         reference operator*() const 
         {
-            const auto& kv = *m_it;
-            return std::make_tuple(kv.first.first, kv.first.second, kv.second);
+            const auto& kv = *m_it; // kv: pair<index_type, T>
+            if constexpr (Dim == 2)
+            {
+                return std::make_tuple(kv.first[0], kv.first[1], kv.second);
+            }
+            else
+            {
+                return std::make_pair(kv.first, kv.second);
+            }
         }
 
         Iterator& operator++() 
@@ -86,14 +101,20 @@ public:
     }
 
     // First-level indexing (non-const)
-    RowProxy operator[](int x) 
-    { 
-        return RowProxy(*this, x); 
+    IndexProxy<1> operator[](int first)
+    {
+        index_type idx{};
+        idx.fill(0);
+        idx[0] = first;
+        return IndexProxy<1>(*this, idx);
     }
     // First-level indexing (const)
-    ConstRowProxy operator[](int x) const 
-    { 
-        return ConstRowProxy(*this, x); 
+    ConstIndexProxy<1> operator[](int first) const
+    {
+        index_type idx{};
+        idx.fill(0);
+        idx[0] = first;
+        return ConstIndexProxy<1>(*this, idx);
     }
 
     // Iteration over occupied cells
@@ -106,90 +127,110 @@ public:
         return Iterator(m_storage.cend()); 
     }
 
-    // Proxy representing matrix[x]
-    class RowProxy 
+    // Non-const proxy chain for operator[] ... operator[] (Dim times)
+    template <std::size_t Depth>
+    class IndexProxy
     {
     public:
-        RowProxy(Matrix& m, int x) : m_matrix(m), m_x(x) {}
+        IndexProxy(Matrix& m, index_type idx) : m_matrix(m), m_idx(idx) {}
 
-        // Access cell proxy: matrix[x][y]
-        class CellProxy 
+        auto operator[](int coord)
         {
-            public:
-                CellProxy(Matrix& m, int x, int y) : m_matrix(m), m_x(x), m_y(y) {}
-    
-                // Read as value
-                operator T() const 
-                { 
-                    return m_matrix.getValue(m_x, m_y); 
-                }
-    
-                // Assign value (supports chained assignments)
-                CellProxy& operator=(const T& v) 
-                {
-                    m_matrix.setValue(m_x, m_y, v);
-                    return *this;
-                }
-    
-                // Support chained assignment from another CellProxy
-                CellProxy& operator=(const CellProxy& other) 
-                {
-                    T v = static_cast<T>(other);
-                    m_matrix.setValue(m_x, m_y, v);
-                    return *this;
-                }
-
-            private:
-                Matrix& m_matrix;
-                int m_x{};
-                int m_y{};
-        };
-
-        CellProxy operator[](int y) 
-        { 
-            return CellProxy(m_matrix, m_x, y); 
+            static_assert(Depth < Dim, "IndexProxy depth overflow");
+            m_idx[Depth] = coord; // fill next coordinate (0-based)
+            if constexpr(Depth + 1 < Dim)
+            {
+                return IndexProxy<Depth + 1>(m_matrix, m_idx);
+            }
+            else
+            {
+                return CellProxy(m_matrix, m_idx);
+            }
         }
 
     private:
         Matrix& m_matrix;
-        int m_x{};
+        index_type m_idx{};
     };
-    
-    // Proxy for const access: matrix[x][y] on const matrix returns value
-    class ConstRowProxy 
+
+    // Const proxy chain for operator[] ... operator[] (Dim times)
+    template <std::size_t Depth>
+    class ConstIndexProxy
     {
     public:
-        ConstRowProxy(const Matrix& m, int x) : m_matrix(m), m_x(x) {}
-        T operator[](int y) const 
-        { 
-            return m_matrix.getValue(m_x, y); 
+        ConstIndexProxy(const Matrix& m, index_type idx) : m_matrix(m), m_idx(idx) {}
+
+        auto operator[](int coord) const
+        {
+            static_assert(Depth < Dim, "ConstIndexProxy depth overflow");
+            m_idx[Depth] = coord; // fill next coordinate (0-based)
+            if constexpr(Depth + 1 < Dim)
+            {
+                return ConstIndexProxy<Depth + 1>(m_matrix, m_idx);
+            }
+            else
+            {
+                return m_matrix.getValue(m_idx);
+            }
         }
+
     private:
         const Matrix& m_matrix;
-        int m_x{};
+        index_type m_idx{};
+    };
+
+    // Final cell proxy (non-const) enabling read/assign/chained-assign
+    class CellProxy
+    {
+    public:
+        CellProxy(Matrix& m, const index_type& idx) : m_matrix(m), m_idx(idx) {}
+
+        operator T() const 
+        { 
+            return m_matrix.getValue(m_idx); 
+        }
+
+        CellProxy& operator=(const T& v)
+        {
+            m_matrix.setValue(m_idx, v);
+            return *this;
+        }
+
+        CellProxy& operator=(const CellProxy& other)
+        {
+            T v = static_cast<T>(other);
+            m_matrix.setValue(m_idx, v);
+            return *this;
+        }
+
+    private:
+        Matrix& m_matrix;
+        index_type m_idx{};
     };
 
 private:
-    friend class RowProxy;
-    friend class ConstRowProxy;
+    template <std::size_t>
+    friend class IndexProxy;
+    template <std::size_t>
+    friend class ConstIndexProxy;
     friend class CellProxy;
 
     static constexpr T kDefault = defaultValue;
 
     // Underlying sparse storage (keeps only non-default values)
-    std::map<coord_type, T> m_storage;
+    storage_type m_storage;
 
-    T getValue(int x, int y) const 
+    T getValue(const index_type& idx) const 
     {
-        auto it = m_storage.find({x, y});
+        auto it = m_storage.find(idx);
         return (it == m_storage.end()) ? kDefault : it->second;
     }
 
-    void setValue(int x, int y, const T& v) 
+    void setValue(const index_type& idx, const T& v) 
     {
         if(v == kDefault) 
         {
-            auto it = m_storage.find({x, y});
+            auto it = m_storage.find(idx);
             if(it != m_storage.end())
             {
                 m_storage.erase(it);
@@ -197,8 +238,9 @@ private:
         } 
         else 
         {
-            m_storage[{x, y}] = v;
+            m_storage[idx] = v;
         }
     }
 
 };
+
