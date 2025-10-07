@@ -6,9 +6,11 @@ on:
   push:
     branches:
       - main
+      - feature/7-cmd-parser
   pull_request:
     branches:
       - main
+      - feature/7-cmd-parser
 
 permissions:
   contents: write  # для push

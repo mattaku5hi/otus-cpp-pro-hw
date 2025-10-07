@@ -1,33 +1,52 @@
 
-set(PROJECT_NAME "helloworld")
-set(PROJECT_LIB "helloworld_core")
+set(PROJECT_NAME "bulk")
+set(PROJECT_LIB "bulk_core")
 
 # Настройка версии
 configure_file(version.h.in version.h @ONLY)
 
 # Основная библиотека
-add_library(${PROJECT_LIB} lib_version.cpp)
-add_library(helloworld::lib ALIAS ${PROJECT_LIB})
+add_library(${PROJECT_LIB}
+    lib_version.cpp
+    bulkapp/aggregator.cpp
+    sinks/console_sink.cpp
+    sinks/file_sink.cpp
+)
+add_library(bulk::lib ALIAS ${PROJECT_LIB})
 set_target_properties(${PROJECT_LIB} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}")
 target_include_directories(${PROJECT_LIB}
+    # Generated headers like version.h
     PRIVATE "${CMAKE_BINARY_DIR}"
     PRIVATE "${CMAKE_BINARY_DIR}/src"
+    # Project headers in source tree (use PUBLIC so consumers inherit)
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
+    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/bulkapp"
+    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/model"
+    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/sinks"
 )
 
 # Исполняемый файл
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME}
+    bulk.cpp
+)
 
 # Установка стандартов
-set_target_properties(${PROJECT_NAME} ${PROJECT_NAME} PROPERTIES
+set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
+)
+
+# Включаем пути заголовков для исполняемой цели (минимально, остальное придёт из bulk::lib)
+target_include_directories(${PROJECT_NAME}
+    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+    PRIVATE "${CMAKE_BINARY_DIR}"
+    PRIVATE "${CMAKE_BINARY_DIR}/src"
 )
 
 add_custom_target(${PROJECT_NAME}_app DEPENDS ${PROJECT_NAME})
 
 # Линковка
-target_link_libraries(${PROJECT_NAME} PRIVATE helloworld::lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE bulk::lib)
 
 # Установка опций компилятора
 if (MSVC)
