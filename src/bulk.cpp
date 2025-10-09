@@ -2,11 +2,7 @@
 
 #include <string>
 
-#include "aggregator.h"
-#include "console_sink.h"
-#include "file_sink.h"
-#include "lib_version.h"
-#include "notifier.h"
+#include "async/async.h"
 
 
 int main(int argc, char **argv)
@@ -33,20 +29,18 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    bulkapp::Notifier notifier;
-    auto console = std::make_shared<bulkapp::ConsoleSink>();
-    auto files = std::make_shared<bulkapp::FileSink>("");
-    notifier.subscribe(console);
-    notifier.subscribe(files);
-
-    bulkapp::Aggregator aggregator{N, notifier};
+    // Single context: read stdin and forward lines as-is
+    auto asyncHandle = async::connect(N);
 
     std::string line;
     while(std::getline(std::cin, line))
     {
-        aggregator.onLine(line);
+        line.push_back('\n');
+        async::receive(asyncHandle, line.data(), line.size());
+        line.clear();
     }
-    aggregator.onEof();
 
+    async::disconnect(asyncHandle);
     return 0;
 }
+

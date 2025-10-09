@@ -38,7 +38,15 @@ void FileSink::onBulk(const Bulk& b)
             name << m_dir << '/';
         }
     }
-    name << "bulk" << b.timestamp << ".log";
+    
+    // Build unique filename: bulk<timestamp>_<threadid>_<seq>.log
+    unsigned long long local_seq = m_seq.fetch_add(1, std::memory_order_relaxed);
+    name << "bulk" << b.timestamp << "_";
+    if(m_threadId.empty() == false) 
+    {
+        name << m_threadId << "_";
+    }
+    name << local_seq << ".log";
 
     std::ofstream ofs(name.str());
     if(ofs.is_open() == false)

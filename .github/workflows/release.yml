@@ -4,13 +4,13 @@ on:
   push:
     branches:
       - main
-      - feature/7-cmd-parser
+      - feature/9-async
     tags:
       - 'v*'
   pull_request:
     branches:
       - main
-      - feature/7-cmd-parser
+      - feature/9-async
 
 jobs:
   build:
