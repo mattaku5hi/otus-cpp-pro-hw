@@ -3,7 +3,10 @@ cmake_minimum_required(VERSION 3.20)
 set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
 set(PROJECT_VERSION 0.0.${PATCH_VERSION})
 
-project(helloworld VERSION ${PROJECT_VERSION} LANGUAGES CXX)
+project(bayan VERSION ${PROJECT_VERSION} LANGUAGES CXX)
+
+find_package(Boost REQUIRED COMPONENTS system filesystem program_options regex unit_test_framework)
+
 
 option(ENABLE_BOOST_TEST "Whether to build Boost test" OFF)
 option(ENABLE_GOOGLE_TEST "Whether to build Google test" ON)
@@ -26,5 +29,6 @@ set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
-set(CPACK_PACKAGE_CONTACT mattakushi@gmail.com)
+set(CPACK_PACKAGE_CONTACT iammattakushi@gmail.com)
 include(CPack)
+

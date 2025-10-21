@@ -33,13 +33,15 @@ endif()
 
 add_executable(${PROJECT_NAME} 
 	test_version.cpp
+	test_options.cpp
+	test_scanner.cpp
 )
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE 
 	GTest::gtest 
 	GTest::gtest_main 
-	helloworld::lib
+	bayan::lib
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

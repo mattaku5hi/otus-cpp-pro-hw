@@ -1,13 +1,13 @@
 
-set(PROJECT_NAME "helloworld")
-set(PROJECT_LIB "helloworld_core")
+set(PROJECT_NAME "bayan")
+set(PROJECT_LIB "bayan_core")
 
 # Настройка версии
 configure_file(version.h.in version.h @ONLY)
 
 # Основная библиотека
-add_library(${PROJECT_LIB} lib_version.cpp)
-add_library(helloworld::lib ALIAS ${PROJECT_LIB})
+add_library(${PROJECT_LIB} lib_version.cpp options.cpp scanner.cpp)
+add_library(bayan::lib ALIAS ${PROJECT_LIB})
 set_target_properties(${PROJECT_LIB} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}")
 target_include_directories(${PROJECT_LIB}
     PRIVATE "${CMAKE_BINARY_DIR}"
@@ -27,7 +27,8 @@ set_target_properties(${PROJECT_NAME} ${PROJECT_NAME} PROPERTIES
 add_custom_target(${PROJECT_NAME}_app DEPENDS ${PROJECT_NAME})
 
 # Линковка
-target_link_libraries(${PROJECT_NAME} PRIVATE helloworld::lib)
+target_link_libraries(${PROJECT_LIB} PUBLIC Boost::program_options Boost::filesystem Boost::regex)
+target_link_libraries(${PROJECT_NAME} PRIVATE bayan::lib)
 
 # Установка опций компилятора
 if (MSVC)
@@ -44,3 +45,5 @@ install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
+
+

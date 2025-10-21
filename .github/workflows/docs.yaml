@@ -6,9 +6,11 @@ on:
   push:
     branches:
       - main
+      - feature/8-boost
   pull_request:
     branches:
       - main
+      - feature/8-boost
 
 permissions:
   contents: write  # для push
