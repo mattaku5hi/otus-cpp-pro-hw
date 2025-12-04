@@ -3,22 +3,31 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 
+#include "iasync.h"
 
 namespace async 
 {
 
-using handle_t = std::uint64_t;
+class IDispatcher; // fwd
 
-// Create a new processing context with bulk size N.
-// Returns an opaque handle to be used in receive() and disconnect().
-handle_t connect(std::size_t bulk_size);
+class AsyncEngine : public IAsyncEngine
+{
+public:
+    AsyncEngine(std::shared_ptr<IDispatcher> dispatcher);
+    handle_t connect(std::size_t bulk_size) override;
+    void receive(handle_t handle, const char* data, std::size_t size) override;
+    void disconnect(handle_t handle) override;
 
-// Feed a portion of input data into the context. Data may contain partial lines.
-void receive(handle_t handle, const char* data, std::size_t size);
+private:
+    struct Impl;
+    std::unique_ptr<Impl> m_impl;
+};
 
-// Finalize the context, flushing any pending block and releasing resources.
-void disconnect(handle_t handle);
+
+std::shared_ptr<IAsyncEngine> createEngine(std::shared_ptr<IDispatcher> dispatcher);
+
 
 } // namespace async
 

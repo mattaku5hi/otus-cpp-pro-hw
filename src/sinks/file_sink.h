@@ -4,7 +4,7 @@
 #include <atomic>
 #include <string>
 
-#include "ibulk_listener.h"
+#include "model/ibulk_listener.h"
 
 
 namespace bulkapp 

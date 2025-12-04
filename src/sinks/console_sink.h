@@ -5,8 +5,7 @@
 #include <memory>
 #include <string>
 
-#include "bulk.h"
-#include "ibulk_listener.h"
+#include "model/ibulk_listener.h"
 
 
 namespace bulkapp 

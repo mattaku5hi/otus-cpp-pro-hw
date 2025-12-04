@@ -35,6 +35,7 @@ BUILD_DEPS=(
     libgtest-dev
     libgmock-dev
     libboost-test-dev
+    libboost-system-dev
 )
 
 # Информация об использовании

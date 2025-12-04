@@ -8,12 +8,6 @@
 namespace async 
 {
 
-Dispatcher& Dispatcher::instance() 
-{
-    static Dispatcher inst;
-    return inst;
-}
-
 Dispatcher::~Dispatcher() 
 {
     stop();
@@ -30,8 +24,8 @@ void Dispatcher::start()
     if(m_fileSinksInited == false) 
     {
         // Initialize file sinks with unique IDs to ensure unique filenames
-        m_fileSink1 = std::make_unique<bulkapp::FileSink>("", "f1");
-        m_fileSink2 = std::make_unique<bulkapp::FileSink>("", "f2");
+        m_fileSink1 = std::make_unique<::bulkapp::FileSink>("", "f1");
+        m_fileSink2 = std::make_unique<::bulkapp::FileSink>("", "f2");
         m_fileSinksInited = true;
     }
 
@@ -72,7 +66,7 @@ void Dispatcher::stop()
     }
 }
 
-void Dispatcher::dispatch(const bulkapp::Bulk& b) 
+void Dispatcher::dispatch(const ::bulkapp::Bulk& b) 
 {
     // push copies to queues
     m_logQueue.push(b);
@@ -81,7 +75,7 @@ void Dispatcher::dispatch(const bulkapp::Bulk& b)
 
 void Dispatcher::runLog() 
 {
-    bulkapp::Bulk b;
+    ::bulkapp::Bulk b;
     while(true) 
     {
         if(m_logQueue.waitPop(b) == false) 
@@ -92,17 +86,17 @@ void Dispatcher::runLog()
     }
 }
 
-void Dispatcher::runFile(bulkapp::FileSink* sink) 
+void Dispatcher::runFile(::bulkapp::FileSink* sink) 
 {
     assert(sink != nullptr);
-    bulkapp::Bulk b;
+    ::bulkapp::Bulk bulk;
     while(true) 
     {
-        if(m_fileQueue.waitPop(b) == false) 
+        if(m_fileQueue.waitPop(bulk) == false) 
         {
             break;
         }
-        sink->onBulk(b);
+        sink->onBulk(bulk);
     }
 }
 
