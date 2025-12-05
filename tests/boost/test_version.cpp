@@ -3,7 +3,7 @@
 #endif
 
 #include <boost/test/included/unit_test.hpp>
-#include "lib_version.h"
+#include "version/lib_version.h"
 
 
 BOOST_AUTO_TEST_SUITE(BOOST_TEST_MODULE)

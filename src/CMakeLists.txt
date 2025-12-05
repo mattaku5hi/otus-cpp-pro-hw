@@ -1,14 +1,18 @@
-
 set(PROJECT_NAME "join_server")
 set(PROJECT_LIB "join_server_core")
 
 # Настройка версии
-configure_file(version/version.h.in version.h @ONLY)
+configure_file(version/version.h.in version/version.h @ONLY)
 
 # Основная библиотека
 add_library(${PROJECT_LIB} version/lib_version.cpp)
 add_library(join_server::lib ALIAS ${PROJECT_LIB})
-set_target_properties(${PROJECT_LIB} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}")
+set_target_properties(${PROJECT_LIB} PROPERTIES
+    OUTPUT_NAME "${PROJECT_NAME}"
+    CXX_STANDARD 20
+    CXX_STANDARD_REQUIRED ON
+)
+
 target_include_directories(${PROJECT_LIB}
     PRIVATE "${CMAKE_BINARY_DIR}"
     PRIVATE "${CMAKE_BINARY_DIR}/src"
@@ -16,10 +20,10 @@ target_include_directories(${PROJECT_LIB}
 )
 
 # Исполняемый файл
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME} join_server.cpp)
 
 # Установка стандартов
-set_target_properties(${PROJECT_NAME} ${PROJECT_NAME} PROPERTIES
+set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
 )
@@ -27,7 +31,10 @@ set_target_properties(${PROJECT_NAME} ${PROJECT_NAME} PROPERTIES
 add_custom_target(${PROJECT_NAME}_app DEPENDS ${PROJECT_NAME})
 
 # Линковка
-target_link_libraries(${PROJECT_NAME} PRIVATE join_server::lib)
+find_package(Threads REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE join_server::lib Threads::Threads Boost::system)
 
 # Установка опций компилятора
 if (MSVC)

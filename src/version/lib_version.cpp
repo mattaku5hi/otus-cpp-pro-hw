@@ -1,5 +1,5 @@
-#include "lib_version.h"
-#include "version.h"
+#include "version/lib_version.h"
+#include "version/version.h"
 
 
 int version() 
