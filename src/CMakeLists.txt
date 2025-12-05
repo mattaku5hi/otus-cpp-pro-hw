@@ -1,13 +1,13 @@
 
-set(PROJECT_NAME "helloworld")
-set(PROJECT_LIB "helloworld_core")
+set(PROJECT_NAME "join_server")
+set(PROJECT_LIB "join_server_core")
 
 # Настройка версии
-configure_file(version.h.in version.h @ONLY)
+configure_file(version/version.h.in version.h @ONLY)
 
 # Основная библиотека
-add_library(${PROJECT_LIB} lib_version.cpp)
-add_library(helloworld::lib ALIAS ${PROJECT_LIB})
+add_library(${PROJECT_LIB} version/lib_version.cpp)
+add_library(join_server::lib ALIAS ${PROJECT_LIB})
 set_target_properties(${PROJECT_LIB} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}")
 target_include_directories(${PROJECT_LIB}
     PRIVATE "${CMAKE_BINARY_DIR}"
@@ -20,14 +20,14 @@ add_executable(${PROJECT_NAME} main.cpp)
 
 # Установка стандартов
 set_target_properties(${PROJECT_NAME} ${PROJECT_NAME} PROPERTIES
-    CXX_STANDARD 17
+    CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
 )
 
 add_custom_target(${PROJECT_NAME}_app DEPENDS ${PROJECT_NAME})
 
 # Линковка
-target_link_libraries(${PROJECT_NAME} PRIVATE helloworld::lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE join_server::lib)
 
 # Установка опций компилятора
 if (MSVC)

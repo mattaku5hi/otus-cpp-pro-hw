@@ -6,9 +6,11 @@ on:
   push:
     branches:
       - main
+      - feature/11-outer-join
   pull_request:
     branches:
       - main
+      - feature/11-outer-join
 
 permissions:
   contents: write  # для push
