@@ -4,12 +4,13 @@ on:
   push:
     branches:
       - main
-      - feature/github_actions
+      - feature/12-mapreduce
     tags:
       - 'v*'
   pull_request:
     branches:
       - main
+      - feature/12-mapreduce
 
 jobs:
   build:

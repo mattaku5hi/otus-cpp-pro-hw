@@ -1,13 +1,12 @@
-
-set(PROJECT_NAME "helloworld")
-set(PROJECT_LIB "helloworld_core")
+set(PROJECT_NAME "mapreduce")
+set(PROJECT_LIB "mapreduce_core")
 
 # Настройка версии
 configure_file(version.h.in version.h @ONLY)
 
 # Основная библиотека
-add_library(${PROJECT_LIB} lib_version.cpp)
-add_library(helloworld::lib ALIAS ${PROJECT_LIB})
+add_library(${PROJECT_LIB} lib_version.cpp csv_utils.cpp)
+add_library(${PROJECT_NAME}::lib ALIAS ${PROJECT_LIB})
 set_target_properties(${PROJECT_LIB} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}")
 target_include_directories(${PROJECT_LIB}
     PRIVATE "${CMAKE_BINARY_DIR}"
@@ -19,15 +18,15 @@ target_include_directories(${PROJECT_LIB}
 add_executable(${PROJECT_NAME} main.cpp)
 
 # Установка стандартов
-set_target_properties(${PROJECT_NAME} ${PROJECT_NAME} PROPERTIES
-    CXX_STANDARD 17
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
 )
 
 add_custom_target(${PROJECT_NAME}_app DEPENDS ${PROJECT_NAME})
 
 # Линковка
-target_link_libraries(${PROJECT_NAME} PRIVATE helloworld::lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE mapreduce::lib)
 
 # Установка опций компилятора
 if (MSVC)
@@ -44,3 +43,21 @@ install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
+
+
+add_executable(mapper_mean mapper_mean.cpp)
+add_executable(reducer_mean reducer_mean.cpp)
+add_executable(mapper_var mapper_var.cpp)
+add_executable(reducer_var reducer_var.cpp)
+
+# Link tools with core
+foreach(t IN ITEMS mapper_mean reducer_mean mapper_var reducer_var)
+  target_link_libraries(${t} PRIVATE mapreduce_core)
+  set_target_properties(${t} PROPERTIES
+    CXX_STANDARD 20
+    CXX_STANDARD_REQUIRED ON)
+endforeach()
+
+# Install only the four main utilities into the package
+install(TARGETS mapper_mean reducer_mean mapper_var reducer_var
+    RUNTIME DESTINATION bin)
