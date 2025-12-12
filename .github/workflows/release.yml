@@ -4,12 +4,13 @@ on:
   push:
     branches:
       - main
-      - feature/github_actions
+      - feature/13-cv
     tags:
       - 'v*'
   pull_request:
     branches:
       - main
+      - feature/13-cv
 
 jobs:
   build:

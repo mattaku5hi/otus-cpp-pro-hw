@@ -6,9 +6,11 @@ on:
   push:
     branches:
       - main
+      - feature/13-cv
   pull_request:
     branches:
       - main
+      - feature/13-cv
 
 permissions:
   contents: write  # для push
