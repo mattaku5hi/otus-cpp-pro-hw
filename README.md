@@ -5,13 +5,13 @@
 ## Установка
 Для работы с утилитами стоит установить DEB-пакет fashion_mnist:
 ```bash
-sudo dpkg -i ./build-release/fashion_mnist-0.0.1-Linux.deb
+sudo dpkg -i ~/Downloads/fashion_mnist-0.0.1-Linux.deb
 ```
 
 ## Логистическая регрессия
 Пример запуска:
 ```bash
-./fashion_mnist ./12_CV/test.csv ./12_CV/logreg_coef.txt
+fashion_mnist ./12_CV/test.csv ./12_CV/logreg_coef.txt
 ```
 
 ## TensorFlow
@@ -27,7 +27,7 @@ sudo ldconfig
 Далее библиотеку можно подключать через CMakeLists.txt и использовать заголовочные файлы из /usr/local/include/tensorflow в собственных модулях.  
 Пример запуска:
 ```bash
-./fashion_mnist_tf ./12_CV/test.csv ./12_CV/saved_model
+fashion_mnist_tf ./12_CV/test.csv ./12_CV/saved_model
 ```
 
 ## Результаты
