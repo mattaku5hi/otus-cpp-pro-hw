@@ -33,8 +33,28 @@ add_custom_target(${PROJECT_NAME}_app DEPENDS ${PROJECT_NAME})
 # Линковка
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
+find_package(SQLite3 REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE join_server::lib Threads::Threads Boost::system)
+if(TARGET SQLite3::SQLite3)
+    target_link_libraries(${PROJECT_NAME} PRIVATE join_server::lib Threads::Threads Boost::system SQLite3::SQLite3)
+elseif(TARGET SQLite::SQLite3)
+    target_link_libraries(${PROJECT_NAME} PRIVATE join_server::lib Threads::Threads Boost::system SQLite::SQLite3)
+else()
+    # Fallback for older FindSQLite3.cmake implementations that don't define an imported target.
+    if(SQLite3_INCLUDE_DIR)
+        target_include_directories(${PROJECT_NAME} PRIVATE ${SQLite3_INCLUDE_DIR})
+    elseif(SQLite3_INCLUDE_DIRS)
+        target_include_directories(${PROJECT_NAME} PRIVATE ${SQLite3_INCLUDE_DIRS})
+    endif()
+
+    if(SQLite3_LIBRARY)
+        target_link_libraries(${PROJECT_NAME} PRIVATE join_server::lib Threads::Threads Boost::system ${SQLite3_LIBRARY})
+    elseif(SQLite3_LIBRARIES)
+        target_link_libraries(${PROJECT_NAME} PRIVATE join_server::lib Threads::Threads Boost::system ${SQLite3_LIBRARIES})
+    else()
+        message(FATAL_ERROR "SQLite3 was found but no library target/variable is available to link")
+    endif()
+endif()
 
 # Установка опций компилятора
 if (MSVC)

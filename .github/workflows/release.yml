@@ -27,7 +27,7 @@ jobs:
         run: sudo apt-get update
 
       - name: Install dependencies
-        run: sudo apt-get install -y build-essential cmake libboost-test-dev libboost-system-dev libboost-thread-dev
+        run: sudo apt-get install -y build-essential cmake libboost-test-dev libboost-system-dev libboost-thread-dev libsqlite3-dev
 
       - name: Configure CMake
         run: cmake -B build -S . -DPATCH_VERSION=${{ github.run_number }} -DENABLE_BOOST_TEST=ON -DENABLE_GOOGLE_TEST=ON

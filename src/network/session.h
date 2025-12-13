@@ -100,7 +100,7 @@ private:
             auto parts = splitBySpaceOnce(rest);
             if(parts.size() != 3 || parts[0].size() != 1) 
             {
-                response = "ERR bad command\n";
+                response = "< ERR bad command\n";
             } 
             else 
             {
@@ -111,16 +111,16 @@ private:
                     std::string err;
                     if(m_db->insert(tableId, id, parts[2], err) == true)
                     {
-                        response = "OK\n"; 
+                        response = "< OK\n"; 
                     }
                     else
                     {
-                        response = std::string("ERR ") + err + "\n";
+                        response = std::string("< ERR ") + err + "\n";
                     }
                 } 
                 catch(...) 
                 {
-                    response = "ERR bad id\n";
+                    response = "< ERR bad id\n";
                 }
             }
         } 
@@ -129,18 +129,18 @@ private:
             auto rest = line.substr(9);
             if(rest.size() != 1) 
             {
-                response = "ERR bad command\n";
+                response = "< ERR bad command\n";
             } 
             else 
             {
                 std::string err;
                 if(m_db->truncate(rest[0], err))
                 {
-                    response = "OK\n"; 
+                    response = "< OK\n"; 
                 }
                 else
                 {
-                    response = std::string("ERR ") + err + "\n";
+                    response = std::string("< ERR ") + err + "\n";
                 }
             }
         } 
@@ -152,7 +152,7 @@ private:
             {
                 os << std::get<0>(t) << ',' << std::get<1>(t) << ',' << std::get<2>(t) << '\n';
             }
-            os << "OK\n";
+            os << "< OK\n";
             response = os.str();
         } 
         else if(line == "SYMMETRIC_DIFFERENCE") 
@@ -163,12 +163,12 @@ private:
             {
                 os << std::get<0>(t) << ',' << std::get<1>(t) << ',' << std::get<2>(t) << '\n';
             }
-            os << "OK\n";
+            os << "< OK\n";
             response = os.str();
         } 
         else
         {
-            response = "ERR unknown command\n";
+            response = "< ERR unknown command\n";
         }
 
         auto self = shared_from_this();
